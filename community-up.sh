@@ -64,8 +64,9 @@ if [[ -f "$0" ]]; then
 else
   ROOT="${EXOH_COMMUNITY_DIR:-${PWD}/exoh-community}"
   mkdir -p "${ROOT}"
-  COMPOSE_FILE="${ROOT}/docker-compose.community.yml"
+  COMPOSE_FILE="${ROOT}/docker-compose.yml"
   write_compose "${COMPOSE_FILE}"
+  rm -f "${ROOT}/docker-compose.community.yml"
 fi
 
 mkdir -p "${ROOT}/secrets"
@@ -96,4 +97,4 @@ compose -f "${COMPOSE_FILE}" up -d
 
 printf 'Stack directory: %s\n' "${ROOT}"
 printf 'CMS: http://localhost:8080\n'
-printf 'Logs: (cd %q && docker-compose -f docker-compose.community.yml logs -f)\n' "${ROOT}"
+printf 'Logs: (cd %q && docker-compose -f %s logs -f)\n' "${ROOT}" "$(basename "${COMPOSE_FILE}")"

@@ -17,13 +17,13 @@ curl -fsSL https://raw.githubusercontent.com/XIN-Solutions/exoh-community/master
 
 Bash reads the script from the pipe, so the script file is not written to disk. The command creates `./exoh-community` (override with `EXOH_COMMUNITY_DIR`) and leaves only what the next start needs:
 
-- `docker-compose.community.yml`
+- `docker-compose.yml`
 - `.env` with `PB_WWW_HOST=http://localhost:8090` and `CREATE_ACCOUNT_ENABLED=false`, written only when `.env` is missing
 - `secrets/pb_admin_password.txt`, a random PocketBase superuser password (mode `644`) created only when that file is missing
 
 The password is not printed. Compose 1.29 bind-mounts the secret as-is, and the app container runs as uid 1001, so mode `600` is unreadable. The password is not placed in `.env` or in the compose `environment` block.
 
-The script then pulls the published images and starts the stack in the background. Re-running the pipe overwrites `docker-compose.community.yml` and leaves the secret, `.env`, and the PocketBase volume in place.
+The script then pulls the published images and starts the stack in the background. Re-running the pipe overwrites `docker-compose.yml` and leaves the secret, `.env`, and the PocketBase volume in place. Later commands in that directory are plain `docker-compose` commands. The file in this repository stays `docker-compose.community.yml` for a clone.
 
 Pin a revision by replacing `master` in the URL with a tag or commit SHA.
 
@@ -45,7 +45,13 @@ Docker Compose 1.29 does not support `pull_policy`. The separate `pull` is what 
 
 If the app container exits once because PocketBase is not accepting connections yet, `restart: unless-stopped` starts it again. There is no healthcheck on this stack.
 
-Follow logs from the stack directory:
+Follow logs from the directory the pipe created:
+
+```bash
+docker-compose logs -f
+```
+
+From a clone of this repo:
 
 ```bash
 docker-compose -f docker-compose.community.yml logs -f
