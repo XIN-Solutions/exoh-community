@@ -58,9 +58,8 @@ if ! command -v openssl >/dev/null 2>&1; then
   exit 1
 fi
 
-script_path="${BASH_SOURCE[0]:-}"
-if [[ -n "${script_path}" && -f "${script_path}" ]]; then
-  ROOT="$(cd "$(dirname "${script_path}")" && pwd)"
+if [[ -f "$0" ]]; then
+  ROOT="$(cd "$(dirname "$0")" && pwd)"
   COMPOSE_FILE="${ROOT}/docker-compose.community.yml"
 else
   ROOT="${EXOH_COMMUNITY_DIR:-${PWD}/exoh-community}"
