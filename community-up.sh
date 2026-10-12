@@ -15,7 +15,7 @@ services:
       - exoh-community-network
     restart: unless-stopped
     environment:
-      - PB_ADMIN_EMAIL=pb-superuser@localhost
+      - PB_ADMIN_EMAIL=pb-superuser@localhost.local
     secrets:
       - pb_admin_password
 
@@ -35,7 +35,7 @@ services:
     environment:
       - PB_HOST=http://pocketbase:8090
       - COMMUNITY_EDITION=true
-      - PB_ADMIN_EMAIL=pb-superuser@localhost
+      - PB_ADMIN_EMAIL=pb-superuser@localhost.local
     secrets:
       - pb_admin_password
 
