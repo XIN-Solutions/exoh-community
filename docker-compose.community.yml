@@ -1,0 +1,47 @@
+services:
+  pocketbase:
+    image: dr.xinsolutions.co.nz/community/exoh-pocketbase:${POCKETBASE_TAG:-latest}
+    container_name: exoh-pocketbase-community
+    ports:
+      - "8090:8090"
+    volumes:
+      - pb_data_community:/pb_data
+    networks:
+      - exoh-community-network
+    restart: unless-stopped
+    environment:
+      - PB_ADMIN_EMAIL=pb-superuser@localhost
+    secrets:
+      - pb_admin_password
+
+  app:
+    image: dr.xinsolutions.co.nz/community/exoh-cms:${COMMUNITY_CMS_TAG:-latest}
+    container_name: exoh-app-community
+    ports:
+      - "8080:8080"
+      - "3000:3000"
+    volumes:
+      - ./.env:/app/.env:ro
+    depends_on:
+      - pocketbase
+    networks:
+      - exoh-community-network
+    restart: unless-stopped
+    environment:
+      - PB_HOST=http://pocketbase:8090
+      - COMMUNITY_EDITION=true
+      - PB_ADMIN_EMAIL=pb-superuser@localhost
+    secrets:
+      - pb_admin_password
+
+volumes:
+  pb_data_community:
+    driver: local
+
+networks:
+  exoh-community-network:
+    driver: bridge
+
+secrets:
+  pb_admin_password:
+    file: ./secrets/pb_admin_password.txt
