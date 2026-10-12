@@ -6,9 +6,8 @@ write_compose() {
 services:
   pocketbase:
     image: dr.xinsolutions.co.nz/community/exoh-pocketbase:${POCKETBASE_TAG:-latest}
-    container_name: exoh-pocketbase-community
     ports:
-      - "8090:8090"
+      - "${PB_PORT:-8090}:8090"
     volumes:
       - pb_data_community:/pb_data
     networks:
@@ -21,10 +20,9 @@ services:
 
   app:
     image: dr.xinsolutions.co.nz/community/exoh-cms:${COMMUNITY_CMS_TAG:-latest}
-    container_name: exoh-app-community
     ports:
-      - "8080:8080"
-      - "3000:3000"
+      - "${CMS_PORT:-8080}:8080"
+      - "${FE_PORT:-3000}:3000"
     volumes:
       - ./.env:/app/.env:ro
     depends_on:
@@ -58,15 +56,17 @@ if ! command -v openssl >/dev/null 2>&1; then
   exit 1
 fi
 
+CMS_PORT="${CMS_PORT:-8080}"
+FE_PORT="${FE_PORT:-3000}"
+PB_PORT="${PB_PORT:-8090}"
+
 if [[ -f "$0" ]]; then
   ROOT="$(cd "$(dirname "$0")" && pwd)"
   COMPOSE_FILE="${ROOT}/docker-compose.community.yml"
 else
-  ROOT="${EXOH_COMMUNITY_DIR:-${PWD}/exoh-community}"
-  mkdir -p "${ROOT}"
+  ROOT="${PWD}"
   COMPOSE_FILE="${ROOT}/docker-compose.yml"
   write_compose "${COMPOSE_FILE}"
-  rm -f "${ROOT}/docker-compose.community.yml"
 fi
 
 mkdir -p "${ROOT}/secrets"
@@ -77,9 +77,12 @@ fi
 chmod 644 "${SECRET_FILE}"
 
 if [[ ! -f "${ROOT}/.env" ]]; then
-  cat >"${ROOT}/.env" <<'EOF'
-PB_WWW_HOST=http://localhost:8090
+  cat >"${ROOT}/.env" <<EOF
+PB_WWW_HOST=http://localhost:${PB_PORT}
 CREATE_ACCOUNT_ENABLED=false
+CMS_PORT=${CMS_PORT}
+FE_PORT=${FE_PORT}
+PB_PORT=${PB_PORT}
 EOF
 fi
 
@@ -96,5 +99,5 @@ compose -f "${COMPOSE_FILE}" pull
 compose -f "${COMPOSE_FILE}" up -d
 
 printf 'Stack directory: %s\n' "${ROOT}"
-printf 'CMS: http://localhost:8080\n'
+printf 'CMS: http://localhost:%s\n' "${CMS_PORT}"
 printf 'Logs: (cd %q && docker-compose -f %s logs -f)\n' "${ROOT}" "$(basename "${COMPOSE_FILE}")"

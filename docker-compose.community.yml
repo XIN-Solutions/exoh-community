@@ -1,9 +1,8 @@
 services:
   pocketbase:
     image: dr.xinsolutions.co.nz/community/exoh-pocketbase:${POCKETBASE_TAG:-latest}
-    container_name: exoh-pocketbase-community
     ports:
-      - "8090:8090"
+      - "${PB_PORT:-8090}:8090"
     volumes:
       - pb_data_community:/pb_data
     networks:
@@ -16,10 +15,9 @@ services:
 
   app:
     image: dr.xinsolutions.co.nz/community/exoh-cms:${COMMUNITY_CMS_TAG:-latest}
-    container_name: exoh-app-community
     ports:
-      - "8080:8080"
-      - "3000:3000"
+      - "${CMS_PORT:-8080}:8080"
+      - "${FE_PORT:-3000}:3000"
     volumes:
       - ./.env:/app/.env:ro
     depends_on:

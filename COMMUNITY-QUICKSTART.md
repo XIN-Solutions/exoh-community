@@ -9,21 +9,29 @@ Run the community Docker stack and complete first-run CMS setup. This repository
 
 ## 1. Install and start
 
-From any directory:
+Create a directory for the stack, change into it, then pipe the script:
 
 ```bash
+mkdir my-site && cd my-site
 curl -fsSL https://raw.githubusercontent.com/XIN-Solutions/exoh-community/master/community-up.sh | bash
 ```
 
-Bash reads the script from the pipe, so the script file is not written to disk. The command creates `./exoh-community` (override with `EXOH_COMMUNITY_DIR`) and leaves only what the next start needs:
+Bash reads the script from the pipe, so the script file is not written to disk. Files are written in the current directory. Compose uses that directory name as the project name, which keeps volumes and containers apart from any other stack. Another stack needs its own directory. Host ports default to **8080** (CMS), **3000** (frontend), and **8090** (PocketBase). Set different ports before the pipe when those are already taken:
+
+```bash
+mkdir my-other-site && cd my-other-site
+CMS_PORT=8081 FE_PORT=3001 PB_PORT=8091 curl -fsSL https://raw.githubusercontent.com/XIN-Solutions/exoh-community/master/community-up.sh | bash
+```
+
+The command leaves:
 
 - `docker-compose.yml`
-- `.env` with `PB_WWW_HOST=http://localhost:8090` and `CREATE_ACCOUNT_ENABLED=false`, written only when `.env` is missing
+- `.env` with `PB_WWW_HOST=http://localhost:<PB_PORT>`, `CREATE_ACCOUNT_ENABLED=false`, and the host ports, written only when `.env` is missing
 - `secrets/pb_admin_password.txt`, a random PocketBase superuser password (mode `644`) created only when that file is missing
 
 The password is not printed. Compose 1.29 bind-mounts the secret as-is, and the app container runs as uid 1001, so mode `600` is unreadable. The password is not placed in `.env` or in the compose `environment` block.
 
-The script then pulls the published images and starts the stack in the background. Re-running the pipe overwrites `docker-compose.yml` and leaves the secret, `.env`, and the PocketBase volume in place. Later commands in that directory are plain `docker-compose` commands. The file in this repository stays `docker-compose.community.yml` for a clone.
+The script then pulls the published images and starts the stack in the background. Re-running the pipe in that directory overwrites `docker-compose.yml` and leaves the secret, `.env`, and the PocketBase volume in place. Later commands there are plain `docker-compose` commands. The file in this repository stays `docker-compose.community.yml` for a clone.
 
 Pin a revision by replacing `master` in the URL with a tag or commit SHA.
 
@@ -39,13 +47,13 @@ That uses the `docker-compose.community.yml` in the clone instead of writing a n
 
 `pull` refreshes the published images. Compose does not build them. The app image is `dr.xinsolutions.co.nz/community/exoh-cms` and PocketBase is `dr.xinsolutions.co.nz/community/exoh-pocketbase`. Both default to `latest`. Pin a dated tag with `COMMUNITY_CMS_TAG` or `POCKETBASE_TAG` if you need one. Those `community/` paths are the public registry copies.
 
-The compose file publishes **8080** (CMS), **3000** (frontend), and **8090** (PocketBase) on the host. The app container talks to PocketBase on the Docker network (`PB_HOST=http://pocketbase:8090`). The browser loads media and other `/api/files` URLs from `PB_WWW_HOST`.
+Host ports default to **8080** (CMS), **3000** (frontend), and **8090** (PocketBase). The app container talks to PocketBase on the Docker network (`PB_HOST=http://pocketbase:8090`). The browser loads media and other `/api/files` URLs from `PB_WWW_HOST`.
 
 Docker Compose 1.29 does not support `pull_policy`. The separate `pull` is what keeps `latest` current. If `docker-compose` is not on `PATH`, the script uses `docker compose`.
 
 If the app container exits once because PocketBase is not accepting connections yet, `restart: unless-stopped` starts it again. There is no healthcheck on this stack.
 
-Follow logs from the directory the pipe created:
+Follow logs from the stack directory:
 
 ```bash
 docker-compose logs -f
