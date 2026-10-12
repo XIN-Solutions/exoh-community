@@ -87,17 +87,21 @@ EOF
 fi
 
 if command -v docker-compose >/dev/null 2>&1; then
-  compose() { docker-compose "$@"; }
+  compose_bin="docker-compose"
 elif docker compose version >/dev/null 2>&1; then
-  compose() { docker compose "$@"; }
+  compose_bin="docker compose"
 else
-  echo "Docker Compose is not installed." >&2
-  exit 1
+  compose_bin="docker-compose"
 fi
 
-compose -f "${COMPOSE_FILE}" pull
-compose -f "${COMPOSE_FILE}" up -d
-
+compose_file="$(basename "${COMPOSE_FILE}")"
 printf 'Stack directory: %s\n' "${ROOT}"
 printf 'CMS: http://localhost:%s\n' "${CMS_PORT}"
-printf 'Logs: (cd %q && docker-compose -f %s logs -f)\n' "${ROOT}" "$(basename "${COMPOSE_FILE}")"
+printf '\nStart the stack from this directory:\n'
+if [[ "${compose_file}" == "docker-compose.yml" ]]; then
+  printf '  %s pull\n' "${compose_bin}"
+  printf '  %s up\n' "${compose_bin}"
+else
+  printf '  %s -f %s pull\n' "${compose_bin}" "${compose_file}"
+  printf '  %s -f %s up\n' "${compose_bin}" "${compose_file}"
+fi

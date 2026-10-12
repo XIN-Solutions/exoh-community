@@ -7,7 +7,7 @@ Run the community Docker stack and complete first-run CMS setup. This repository
 - Docker and Docker Compose (`docker-compose` 1.29 or the Compose V2 plugin)
 - `openssl`
 
-## 1. Install and start
+## 1. Install
 
 Create a directory for the stack, change into it, then pipe the script:
 
@@ -31,7 +31,14 @@ The command leaves:
 
 The password is not printed. Compose 1.29 bind-mounts the secret as-is, and the app container runs as uid 1001, so mode `600` is unreadable. The password is not placed in `.env` or in the compose `environment` block.
 
-The script then pulls the published images and starts the stack in the background. Re-running the pipe in that directory overwrites `docker-compose.yml` and leaves the secret, `.env`, and the PocketBase volume in place. Later commands there are plain `docker-compose` commands. The file in this repository stays `docker-compose.community.yml` for a clone.
+The script does not start Compose. It prints the commands. From the stack directory:
+
+```bash
+docker-compose pull
+docker-compose up
+```
+
+`pull` refreshes the published images before `up`. Re-running the pipe in that directory overwrites `docker-compose.yml` and leaves the secret, `.env`, and any existing PocketBase volume in place. The file in this repository stays `docker-compose.community.yml` for a clone.
 
 Pin a revision by replacing `master` in the URL with a tag or commit SHA.
 
@@ -41,7 +48,12 @@ Pin a revision by replacing `master` in the URL with a tag or commit SHA.
 ./community-up.sh
 ```
 
-That uses the `docker-compose.community.yml` in the clone instead of writing a new copy.
+That uses the `docker-compose.community.yml` in the clone instead of writing a new copy, then prints:
+
+```bash
+docker-compose -f docker-compose.community.yml pull
+docker-compose -f docker-compose.community.yml up
+```
 
 ## 2. What the stack publishes
 
@@ -49,7 +61,7 @@ That uses the `docker-compose.community.yml` in the clone instead of writing a n
 
 Host ports default to **8080** (CMS), **3000** (frontend), and **8090** (PocketBase). The app container talks to PocketBase on the Docker network (`PB_HOST=http://pocketbase:8090`). The browser loads media and other `/api/files` URLs from `PB_WWW_HOST`.
 
-Docker Compose 1.29 does not support `pull_policy`. The separate `pull` is what keeps `latest` current. If `docker-compose` is not on `PATH`, the script uses `docker compose`.
+Docker Compose 1.29 does not support `pull_policy`. The separate `pull` is what keeps `latest` current. If `docker-compose` is not on `PATH`, use `docker compose` with the same arguments.
 
 If the app container exits once because PocketBase is not accepting connections yet, `restart: unless-stopped` starts it again. There is no healthcheck on this stack.
 
