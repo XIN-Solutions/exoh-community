@@ -26,7 +26,7 @@ CMS_PORT=8081 FE_PORT=3001 PB_PORT=8091 curl -fsSL https://raw.githubusercontent
 The command leaves:
 
 - `docker-compose.yml`
-- `.env` with `PB_WWW_HOST=http://localhost:<PB_PORT>`, `CREATE_ACCOUNT_ENABLED=false`, and the host ports, written only when `.env` is missing
+- `.env` with `PB_WWW_HOST=http://localhost:<PB_PORT>`, `CREATE_ACCOUNT_ENABLED=false`, and the host ports, written only when `.env` is missing. A random `GLOBAL_SALT` is added when that line is missing, including on an existing `.env`. An existing salt is not rotated. The value is not printed.
 - `secrets/pb_admin_password.txt`, a random PocketBase superuser password (mode `644`) created only when that file is missing
 
 The password is not printed. Compose 1.29 bind-mounts the secret as-is, and the app container runs as uid 1001, so mode `600` is unreadable. The password is not placed in `.env` or in the compose `environment` block.

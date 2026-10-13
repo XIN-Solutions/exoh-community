@@ -92,14 +92,18 @@ if [[ ! -f "${SECRET_FILE}" ]]; then
 fi
 chmod 644 "${SECRET_FILE}"
 
-if [[ ! -f "${ROOT}/.env" ]]; then
-  cat >"${ROOT}/.env" <<EOF
+ENV_FILE="${ROOT}/.env"
+if [[ ! -f "${ENV_FILE}" ]]; then
+  cat >"${ENV_FILE}" <<EOF
 PB_WWW_HOST=http://localhost:${PB_PORT}
 CREATE_ACCOUNT_ENABLED=false
 CMS_PORT=${CMS_PORT}
 FE_PORT=${FE_PORT}
 PB_PORT=${PB_PORT}
+GLOBAL_SALT=$(openssl rand -base64 32 | tr -d '\n')
 EOF
+elif ! grep -q '^GLOBAL_SALT=.' "${ENV_FILE}"; then
+  printf '\nGLOBAL_SALT=%s\n' "$(openssl rand -base64 32 | tr -d '\n')" >>"${ENV_FILE}"
 fi
 
 if command -v docker-compose >/dev/null 2>&1; then
