@@ -16,7 +16,7 @@ mkdir my-site && cd my-site
 curl -fsSL https://raw.githubusercontent.com/XIN-Solutions/exoh-community/master/community-up.sh | bash
 ```
 
-Bash reads the script from the pipe, so the script file is not written to disk. Files are written in the current directory. Compose uses that directory name as the project name, which keeps volumes and containers apart from any other stack. Another stack needs its own directory. Host ports default to **8080** (CMS), **3000** (frontend), and **8090** (PocketBase). Set different ports before the pipe when those are already taken:
+Bash reads the script from the pipe, so the script file is not written to disk. Files are written in the current directory. The same `curl | bash` command works on macOS with the system bash 3.2. Compose uses that directory name as the project name, which keeps volumes and containers apart from any other stack. Another stack needs its own directory. Host ports default to **8080** (CMS), **3000** (frontend), and **8090** (PocketBase). Set different ports before the pipe when those are already taken:
 
 ```bash
 mkdir my-other-site && cd my-other-site

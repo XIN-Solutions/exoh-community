@@ -60,10 +60,26 @@ CMS_PORT="${CMS_PORT:-8080}"
 FE_PORT="${FE_PORT:-3000}"
 PB_PORT="${PB_PORT:-8090}"
 
-if [[ -f "$0" ]]; then
-  ROOT="$(cd "$(dirname "$0")" && pwd)"
-  COMPOSE_FILE="${ROOT}/docker-compose.community.yml"
-else
+# `curl ... | bash` leaves $0 as bash, or as /bin/bash on macOS when bash is
+# invoked by path. BASH_SOURCE is unset in that case, and bash 3.2 errors
+# under `set -u` if an unset element is read, so do not touch it.
+from_checkout=false
+case "$0" in
+  bash | sh | zsh | dash | ksh | -bash | -sh | */bash | */sh | */zsh | */dash | */ksh | /dev/fd/* | /dev/stdin)
+    ;;
+  *)
+    if [[ -f "$0" ]]; then
+      script_dir="$(dirname "$0")"
+      if [[ -d "${script_dir}" && -f "${script_dir}/docker-compose.community.yml" ]]; then
+        ROOT="$(cd "${script_dir}" && pwd)"
+        COMPOSE_FILE="${ROOT}/docker-compose.community.yml"
+        from_checkout=true
+      fi
+    fi
+    ;;
+esac
+
+if [[ "${from_checkout}" == false ]]; then
   ROOT="${PWD}"
   COMPOSE_FILE="${ROOT}/docker-compose.yml"
   write_compose "${COMPOSE_FILE}"
