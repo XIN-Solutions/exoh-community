@@ -9,6 +9,7 @@ services:
       - exoh-community-network
     restart: unless-stopped
     environment:
+      - COMMUNITY_EDITION=true
       - PB_ADMIN_EMAIL=pb-superuser@localhost.local
     secrets:
       - pb_admin_password
